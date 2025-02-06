@@ -1,12 +1,36 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Pizza from "./Pizza";
 
+
+const intl = new Intl.NumberFormat("en-US", {
+    "style": "currency", 
+    currency: "USD"
+})
 // anything you see use in react the alarm should go off in your head that that s hook 
 
 export default function Order () {
+    const [pizzaTypes, setPizzaTypes] = useState([]); 
     const [pizzaType, setPizzaType] = useState("pepperoni");
     const [pizzaSize, setPizzaSize] = useState("M"); 
-    console.log(pizzaType, pizzaSize) 
+    const [loading, setLoading] = useState(true); 
+    
+    let price, selectedPizza;
+
+    if(!loading) {
+        selectedPizza = pizzaTypes.find((pizza) => pizzaType === pizza.id); 
+    }
+
+    async function fetchPizzaTypes() {
+        const pizzaRes = await fetch("/api/pizzas"); 
+        const pizzaJson = await pizzaRes.json(); 
+        setPizzaTypes(pizzaJson); 
+        setLoading(false); 
+        
+    }
+
+    useEffect(() => {
+        fetchPizzaTypes(); 
+    }, []);
 
     return (
         <div className="order">
@@ -16,19 +40,20 @@ export default function Order () {
                 <div>
                     <div>
                         <label htmlFor="pizza-type">Pizza Type</label>
-                        <select 
-
-                                // e is a normal browser evet, gets an anonymous function 
-                                // whenever a change happens on the select call this function , which takes in an event and 
-                                // calls setPizzaType with the target.value and the target is gonna be one of these options and the 
-                                // value will change.                
+                        {/* e is a normal browser evet, gets an anonymous function  */}
+                                {/* // whenever a change happens on the select call this function , which takes in an event and  */}
+                                {/* // calls setPizzaType with the target.value and the target is gonna be one of these options and the  */}
+                                {/* // value will change.  */}
+                        <select                
                             onChange={(e) => setPizzaType(e.target.value)}
-
-                            name="pizza-type" value={pizzaType}>
-                            <option value="pepperoni">The Pepperoni Pizza</option>
-                            <option value="hawaiian">The Hawaiian Pizza</option>
-                            <option value="big_meat">The Big Meat Pizza</option>
-
+                            name="pizza-type" 
+                            value={pizzaType}
+                        >
+                          {pizzaTypes.map((pizza) => (
+                            <option key={pizza.id} value={pizza.id}>
+                                {pizza.name}
+                            </option>
+                          ))}
                         </select>
                     </div>
                     <div>
